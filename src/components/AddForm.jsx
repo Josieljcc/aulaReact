@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { addTodo, ADD_TODO } from "../redux/actions/actions";
+import { actionEditTodo, addTodo } from "../redux/actions/actions";
 
 class AddForm extends Component {
   state = {
@@ -11,19 +11,41 @@ class AddForm extends Component {
     this.setState({ todoText: value });
   };
 
-  handleaddTodo = () => {
+  createId = () => {
+    const { lastId } = this.props;
+    return lastId + 1;
+  };
+
+  addTodo = () => {
     const { dispatch } = this.props;
     const { todoText } = this.state;
     const todo = {
-      id: 0,
+      id: this.createId(),
       todoText,
       active: true,
     };
     dispatch(addTodo(todo));
   };
 
+  editTodo = () => {
+    const { dispatch, idToEdit } = this.props;
+    const { todoText } = this.state;
+    const editedText = todoText;
+    dispatch(actionEditTodo(editedText));
+  };
+
+  handleTodo = () => {
+    const { isEditing } = this.props;
+    if (isEditing) {
+      this.editTodo();
+      return;
+    }
+    this.addTodo();
+  };
+
   render() {
     const { todoText } = this.state;
+    const { isEditing } = this.props;
     return (
       <div className="add-form">
         <input
@@ -32,10 +54,17 @@ class AddForm extends Component {
           value={todoText}
           onChange={this.handleInput}
         />
-        <button onClick={this.handleaddTodo}>+</button>
+        <button onClick={this.handleTodo}>{isEditing ? "editar" : "+"}</button>
       </div>
     );
   }
 }
 
-export default connect()(AddForm);
+const mapStateToProps = ({ todo, lastId, isEditing, idToEdit }) => ({
+  todo,
+  lastId,
+  isEditing,
+  idToEdit,
+});
+
+export default connect(mapStateToProps)(AddForm);
